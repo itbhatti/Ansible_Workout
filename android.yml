@@ -1,0 +1,54 @@
+---
+- name: Install Development Tools
+  hosts: servers
+  become: true
+
+  tasks:
+    - name: Update apt packages
+      ansible.builtin.apt:
+        update_cache: yes
+
+    - name: Install Java Development Kit (JDK)
+      ansible.builtin.apt:
+        name: openjdk-11-jdk
+        state: present
+
+    - name: Install Git
+      ansible.builtin.apt:
+        name: git
+        state: present
+
+    - name: Install Notepad++
+      ansible.builtin.shell:
+        cmd: "sudo snap install notepad-plus-plus"
+
+    - name: Install Skype
+      ansible.builtin.shell:
+        cmd: "sudo snap install skype --classic"
+
+    - name: Download Android Studio
+      get_url:
+        url: "https://redirector.gvt1.com/edgedl/android/studio/ide-zips/2020.3.1.24/android-studio-2020.3.1.24-linux.tar.gz"
+        dest: "/tmp/android-studio.tar.gz"
+
+    - name: Extract Android Studio archive
+      ansible.builtin.unarchive:
+        src: "/tmp/android-studio.tar.gz"
+        dest: "/opt/"
+        remote_src: true
+        creates: "/opt/android-studio"
+
+    - name: Set Android Studio Home
+      ansible.builtin.lineinfile:
+        path: "~/.bashrc"
+        line: "export ANDROID_STUDIO_HOME=/opt/android-studio"
+
+    - name: Add Android Studio to PATH
+      ansible.builtin.lineinfile:
+        path: "~/.bashrc"
+        line: "export PATH=$PATH:$ANDROID_STUDIO_HOME/bin"
+
+    - name: Source the updated bashrc
+      ansible.builtin.shell: "source ~/.bashrc"
+      args:
+        executable: /bin/bash

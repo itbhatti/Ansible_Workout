@@ -1,0 +1,98 @@
+---
+- name: QA Playbook
+  hosts:  servers
+  become: true
+
+  tasks:
+
+    - name: Download Postman
+      get_url:
+          url: https://dl.pstmn.io/download/latest/linux64
+          dest: /opt/Postman/Postman.tar.gz
+
+    - name: Extract Postman
+      ansible.builtin.unarchive:
+        src: /opt/Postman/Postman.tar.gz
+        dest: /opt/Postman
+        remote_src: true
+
+    - name: Create a symbolic link
+      file:
+        src: /opt/Postman/Postman/Postman
+        dest: /usr/local/bin/postman
+        state: link
+
+    - name: Install Java
+      apt:
+        name: openjdk-8-jdk
+        state: present
+      when: ansible_distribution == "Ubuntu"
+
+    - name: Install Java
+      yum:
+        name: java-1.8.0-openjdk
+        state: present
+      when: ansible_distribution == "CentOS"
+
+    - name: Download Apache JMeter
+      get_url:
+        url: "https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-5.4.1.tgz"
+        dest: "/tmp/apache-jmeter-5.4.1.tgz"
+
+    - name: Extract JMeter archive
+      ansible.builtin.unarchive:
+        src: "/tmp/apache-jmeter-5.4.1.tgz"
+        dest: "/opt/"
+        remote_src: true
+        creates: "/opt/apache-jmeter-5.4.1"
+
+    - name: Set JMeter Home
+      ansible.builtin.lineinfile:
+        path: "~/.bashrc"
+        line: "export JMETER_HOME=/opt/apache-jmeter-5.4.1"
+
+    - name: Add JMeter to PATH
+      ansible.builtin.lineinfile:
+        path: "~/.bashrc"
+        line: "export PATH=$PATH:$JMETER_HOME/bin"
+
+    - name: Source the updated bashrc
+      ansible.builtin.shell: "source ~/.bashrc"
+      args:
+        executable: /bin/bash
+
+    - name: install vysor
+      ansible.builtin.shell:
+        cmd: "(echo 'deb [arch=amd64, trusted=yes] https://nuts.vysor.io/apt ./' | sudo tee /etc/apt/sources.list.d/vysor.list)"
+    - name: Update apt packages
+      ansible.builtin.apt:
+        update_cache: yes
+
+    - name: Install Vysor
+      ansible.builtin.apt:
+        name: vysor
+        state: present
+
+
+    - name: Download Eclipse IDE
+      get_url:
+        url: "https://www.eclipse.org/downloads/download.php?file=/technology/epp/downloads/release/2021-12/R/eclipse-java-2021-12-R-linux-gtk-x86_64.tar.gz&r=1"
+        dest: "/tmp/eclipse.tar.gz"
+
+    - name: Extract Eclipse archive
+      ansible.builtin.unarchive:
+        src: "/tmp/eclipse.tar.gz"
+        dest: "/opt/"
+        remote_src: true
+        creates: "/opt/eclipse"
+
+    - name: Create a symbolic link for Eclipse
+      ansible.builtin.file:
+        src: "/opt/eclipse/eclipse"
+        dest: "/usr/local/bin/eclipse"
+        state: link
+
+    - name: Clean up temporary files
+      ansible.builtin.file:
+        path: "/tmp/eclipse.tar.gz"
+        state: absent

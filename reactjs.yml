@@ -1,0 +1,50 @@
+---
+- name: Install Development Tools
+  hosts: servers
+  become: true
+
+  tasks:
+    - name: Update apt packages
+      ansible.builtin.apt:
+        update_cache: yes
+
+    - name: Install Node.js
+      ansible.builtin.apt:
+        name: nodejs
+        state: present
+
+#    - name: Install npm (Node.js package manager)
+#      ansible.builtin.apt:
+#        name: npm
+#        state: present
+
+    - name: Install Git
+      ansible.builtin.apt:
+        name: git
+        state: present
+
+    - name: Install Git CLI
+      ansible.builtin.apt:
+        name: git-core
+        state: present
+
+    - name: Install Visual Studio Code
+      ansible.builtin.shell:
+        cmd: "sudo snap install --classic code"
+
+    - name: Set Visual Studio Code as the default editor for Git
+      ansible.builtin.shell:
+        cmd: "git config --global core.editor 'code --wait'"
+
+    - name: Install necessary build tools for some npm packages
+      ansible.builtin.apt:
+        name: build-essential
+        state: present
+
+    - name: Upgrade npm to the latest version
+      ansible.builtin.shell:
+        cmd: "sudo npm install -g npm"
+
+    - name: Clean up apt cache
+      ansible.builtin.apt:
+        autoclean: yes
