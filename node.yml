@@ -1,0 +1,36 @@
+---
+- name: Install Development Tools
+  hosts: servers
+  become: true  # Run tasks as sudo
+  vars:
+    aerospike_version: "5.11.0.4"  # Replace with the desired version
+    aerospike_edition: "community"  # Use "enterprise" for the enterprise edition
+
+  tasks:
+    - name: Install prerequisites
+      apt:
+        name:
+          - curl
+          - gnupg
+          - software-properties-common
+        state: present
+
+    - name: Install Visual Studio Code
+      apt_repository:
+        repo: deb [arch=amd64] https://packages.microsoft.com/repos/vscode stable main
+        state: present
+      notify: Update package cache
+
+    - name: Install MongoDB
+      apt_key:
+        url: https://www.mongodb.org/static/pgp/server-4.4.asc
+        state: present
+
+    - name: Add MongoDB repository
+      apt_repository:
+        repo: deb [ arch=amd64,arm64 ] https://repo.mongodb.org/apt/ubuntu focal/mongodb-org/4.4 multiverse
+        state: present
+      notify: Update package cache
+
+    - name: Install Node.js and npm
+      shell: curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
