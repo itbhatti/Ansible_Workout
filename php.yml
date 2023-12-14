@@ -1,0 +1,89 @@
+---
+- name: PHP Playbook
+  hosts: servers
+  become: yes
+
+  tasks:
+    - name: update package
+      ansible.builtin.apt:
+       update_cache: yes
+    - name: Apache install
+      apt: pkg=apache2 state=present
+
+    - name: Install Node
+      apt:
+        update_cache: yes
+    - name: node and npm
+      apt:
+        #name: "{{ item }}"
+        state: present
+      loop:
+        - npm
+        - nodejs
+    - name: Download Postman
+      get_url:
+          url: https://dl.pstmn.io/download/latest/linux64
+          dest: /opt/Postman/Postman.tar.gz
+    - name: update
+      ansible.builtin.apt:
+       update_cache: yes
+    - name: Install skype
+      shell: "snap install skype --classic"
+    - name: Extract Postman
+      ansible.builtin.unarchive:
+        src: /opt/Postman/Postman.tar.gz
+        dest: /opt/Postman
+        remote_src: true
+
+    - name: Create a symbolic link
+      file:
+        src: /opt/Postman/Postman/Postman
+        dest: /usr/local/bin/postman
+        state: link
+    - name: Install Visual Studio Code
+      ansible.builtin.shell:
+        cmd: "sudo snap install --classic code"
+    - name: sublime texT
+      #ansible.builtin.shell:
+      shell: " snap install sublime-text --classic"
+    - name: Install Apache
+      apt:
+        name: apache2
+        state: present
+
+    - name: Install MySQL server
+      apt:
+        name: mysql-server
+        state: present
+
+    - name: Install PHP and required modules
+      apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - php
+        - libapache2-mod-php
+        - php-mysql
+
+    - name: Enable Apache modules
+      apache2_module:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - rewrite
+        - ssl
+
+    - name: Restart Apache
+      service:
+        name: apache2
+        state: restarted
+    - name: Set MySQL root password
+      mysql_user:
+        name: root
+        password: Admin@123
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+
+    - name: Create a MySQL database
+      mysql_db:
+        name: admin
+        state: present

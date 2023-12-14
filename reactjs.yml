@@ -1,5 +1,5 @@
 ---
-- name: Install Development Tools
+- name: ReactJS Playbook
   hosts: servers
   become: true
 
@@ -12,11 +12,6 @@
       ansible.builtin.apt:
         name: nodejs
         state: present
-
-#    - name: Install npm (Node.js package manager)
-#      ansible.builtin.apt:
-#        name: npm
-#        state: present
 
     - name: Install Git
       ansible.builtin.apt:
@@ -32,9 +27,6 @@
       ansible.builtin.shell:
         cmd: "sudo snap install --classic code"
 
-    - name: Set Visual Studio Code as the default editor for Git
-      ansible.builtin.shell:
-        cmd: "git config --global core.editor 'code --wait'"
 
     - name: Install necessary build tools for some npm packages
       ansible.builtin.apt:

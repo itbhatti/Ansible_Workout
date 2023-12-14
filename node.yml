@@ -1,19 +1,26 @@
 ---
 - name: Install Development Tools
   hosts: servers
-  become: true  # Run tasks as sudo
+  become: true
   vars:
-    aerospike_version: "5.11.0.4"  # Replace with the desired version
-    aerospike_edition: "community"  # Use "enterprise" for the enterprise edition
+    redis_port: 6379
+    redis_databases: 1
 
   tasks:
-    - name: Install prerequisites
-      apt:
-        name:
-          - curl
-          - gnupg
-          - software-properties-common
-        state: present
+    - name: update cache
+      ansible.builtin.apt:
+        update_cache: yes
+    - name: Install Skype
+      shell: " snap install skype --classic"
+
+    - name: loop some package
+      ansible.builtin.apt:
+       name: "{{ item }}"
+       state: present
+      with_items:
+         - curl
+         - gnupg
+         - software-properties-common
 
     - name: Install Visual Studio Code
       apt_repository:
@@ -33,4 +40,16 @@
       notify: Update package cache
 
     - name: Install Node.js and npm
-      shell: curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -
+      shell: "curl -sL https://deb.nodesource.com/setup_14.x | sudo -E bash -"
+
+    - name: Installing Redis
+      apt: pkg=redis-server state=latest
+
+    - name: Ensure Redis is started
+      service: name=redis-server state=started enabled=yes
+    - name: update
+      ansible.builtin.apt:
+        update_cache: yes
+
+    - name:
+      shell: "sudo snap install code --classic"
