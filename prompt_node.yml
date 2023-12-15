@@ -1,0 +1,28 @@
+---
+- name: Install Node.js
+  hosts: servers
+  become: yes
+
+  vars_prompt:
+    - name: node_version
+      prompt: "Enter the Node.js version to install:"
+      private: no
+
+  tasks:
+  - name: update cache and remove previous nodejs
+    apt:
+     update_cache: yes
+     name: nodejs
+     state: absent
+
+  - name: adding version
+    shell: >
+      cd ~ && \
+      curl -sL https://deb.nodesource.com/setup_{{node_version}}.x -o /tmp/nodesource_setup.sh && \
+      sudo bash /tmp/nodesource_setup.sh
+
+  - name: installing node
+    apt:
+      name: nodejs
+      state: present
+#      sudo apt install nodejs
